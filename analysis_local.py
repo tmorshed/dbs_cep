@@ -1,8 +1,12 @@
 ## Importing packages and files
 
+    #import os
 import numpy as np
 import mne
-fullraw = mne.io.read_raw_cnt(r"C:\Users\taham\OneDrive - UHN\DBS_PD\Data\recieved\ChenLab\Recieved\130Hz_STN_ON_LeftSTIM.cnt", verbose='INFO')
+import matplotlib.pyplot as plt
+import scipy.signal as sg
+raw = mne.io.read_raw_cnt(r"C:\Users\taham\OneDrive - UHN\Projects\DBS\Data\recieved\ChenLab\Recieved\130Hz_STN_ON_LeftSTIM.cnt", verbose='INFO',preload=False)
+#preload=True makes it load to RAM as well. Normally, it only loads the symlinks to the RAM and the data stays in the local storage
 
 
 ##Import metadata
@@ -11,6 +15,7 @@ time_secs = raw.times
 ch_names = raw.ch_names
 n_chan = len(ch_names)
 sampling_rate= raw.info['sfreq']
+dt=1/sampling_rate
 
 ## Print some metadata
 print('the imported data object has {} time samples and {} channels.'
@@ -26,20 +31,52 @@ print(raw.info)
 print() #adding an extra row 
 
 ##Choose channel to analyze
-channel_index = 0
+channel_name = ['R2']
 
 
 #Choose time window to analyze
-start_stop_seconds = np.array([11, 13]) #select start and end crop times in seconds
+start_stop_seconds = np.array([11, 11.2]) #select start and end crop times in seconds
 start_sample, stop_sample = (start_stop_seconds * sampling_rate).astype(int)
-raw_selection = raw[channel_index, start_sample:stop_sample]
+times=np.arange(start_stop_seconds[0],start_stop_seconds[1],dt)
+lsel=len(times) #number of datapoints in the selected time window
+times=times.reshape(1,lsel)
+raw_selection = np.asarray(raw[channel_name, start_sample:stop_sample])[0] 
+#raw_selection.append(np.arange[start_stop_seconds[0],start_stop_seconds[1],dt])
+#raw_selection.append(-1*raw_selection[0].T) #correcting the dimensions
+#del raw_selection[0]
+raw_selection=np.average(raw_selection)-raw_selection # re-aligned from zero
 
-## Loading to RAM and plotting using MNE. Choose only one channel. The whole time
+
+#find events:
+amp_max=(max(raw_selection[0]))
+amp_th=amp_max/5
+indx, lrpeaks = sg.find_peaks(raw_selection[0], threshold=amp_th)
+ltpeaks=lrpeaks['left_thresholds']
+rtpeaks=lrpeaks['right_thresholds']
+indx_seconds = (indx * dt) + start_stop_seconds[0]
+peaks = raw_selection[0][indx]
+
+ind_pks = list(np.zeros((2,len(indx)), dtype=float))
+
+for i in range(1:lsel):
+    if i>=amp_th:
+        ind_pks
+        
+
+
+print("plotting the data")
+fig = plt.figure()
+axes = fig.add_axes([0, 0, 1, 1]); # left, bottom, width, height
+axes.plot(times[0], raw_selection[0], 'k');
+axes.scatter(indx_seconds, peaks)
+axes.set_xlabel('times in seconds');
+axes.set_ylabel('activation from baseline, in mV');
+plt.show()
+
+##indx = find([0;sig]<Amp_th & [sig;0]>=Amp_th);
+
+
 
 # Preprocessing
     # Lowpass filter = 10 Hz
     # Highpass filter = 200 Hz. Our stimulation is at 130-150 Hz max and will not be affected by this
-
-print("loading the data to RAM and plotting")
-raw.crop().load_data() # add tmax or tmin if only a specific period is needed
-fig1=raw.plot #raw.plot(highpass=200, lowpass=10)
