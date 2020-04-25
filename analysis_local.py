@@ -1,13 +1,24 @@
 ## Importing packages and files
 
     #import os
+    
+
 import numpy as np
 import mne
 import matplotlib.pyplot as plt
 import scipy.signal as sg
-raw = mne.io.read_raw_cnt(r"C:\Users\taham\OneDrive - UHN\Projects\DBS\Data\recieved\ChenLab\Recieved\130Hz_STN_ON_LeftSTIM.cnt", verbose='INFO',preload=False)
-#preload=True makes it load to RAM as well. Normally, it only loads the symlinks to the RAM and the data stays in the local storage
 
+
+raw = mne.io.read_raw_cnt(r'C:\Users\taham\OneDrive - UHN\Projects\DBS\Data\recieved\ChenLab\Recieved\Stop-signal_eDBS_Jan17_2019_s06-B1.cnt', verbose='INFO',preload=False)
+
+#preload=True makes it load to RAM as well. Normally, it only loads the symlinks to the RAM and the data stays in the local storage
+if raw.find_events() == []
+stimulations=mne.events_from_annotations(raw)
+
+
+
+##Choose channel to analyze        #Please input the desired channel name
+channel_name = ['R1']
 
 ##Import metadata
 n_time_samps = raw.n_times
@@ -19,7 +30,7 @@ dt=1/sampling_rate
 
 ## Print some metadata
 print('the imported data object has {} time samples and {} channels.'
-      ''.format(n_time_samps, n_chan))
+''.format(n_time_samps, n_chan))
 print('The last time sample is at {} seconds.'.format(time_secs[-1]))
 print('The first few channel names are {}.'.format(', '.join(ch_names[:3])))
 print()  # insert a blank line in the output
@@ -29,9 +40,14 @@ print('MISC INFO: {}'.format(raw.info['description'], '\n'))      #miscellaneous
 print(raw.info)
 
 print() #adding an extra row 
+print()
+print()
 
-##Choose channel to analyze
-channel_name = ['R2']
+print('The sensor locations on the cranium:')
+raw.plot_sensors()
+print('The sensor locations in 3D:')
+raw.plot_sensors('3d')
+
 
 
 #Choose time window to analyze
@@ -58,10 +74,7 @@ peaks = raw_selection[0][indx]
 
 ind_pks = list(np.zeros((2,len(indx)), dtype=float))
 
-for i in range(1:lsel):
-    if i>=amp_th:
-        ind_pks
-        
+
 
 
 print("plotting the data")
